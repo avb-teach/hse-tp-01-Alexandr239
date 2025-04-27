@@ -8,6 +8,7 @@ out_dir = sys.argv[2]
 # out_dir = '/tmp/out_dir'
 
 # print(f"{in_dir=}, {out_dir=}")
+files = {}
 
 
 def get_dir_files(d, depth):
@@ -21,7 +22,18 @@ def get_dir_files(d, depth):
         elif os.path.isdir(f_name):
             get_dir_files(f_name, depth + 1)
         elif os.path.isfile(f_name):
-            shutil.copy(f_name, out_dir)
+            tmp = f
+            if files.get(f) is not None:
+                files[f] += 1
+                name_ext = f.split(".")
+                if len(name_ext) == 1:
+                    name_ext[0] = f"{name_ext[0]}{str(files.get(f))}"
+                elif len(name_ext) > 1:
+                    name_ext[-2] = f"{name_ext[-2]}{str(files.get(f))}"
+                tmp = ".".join(name_ext)
+            else:
+                files[f] = 0
+            shutil.copy(f_name, os.path.join(out_dir, tmp))
 
 
 get_dir_files(in_dir, 1)
