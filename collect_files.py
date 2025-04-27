@@ -4,14 +4,17 @@ import sys
 
 in_dir = sys.argv[1]
 out_dir = sys.argv[2]
+max_depth = None
+if len(sys.argv) == 4 and sys.argv[3]:
+    max_depth = int(sys.argv[3])
 # in_dir = '/tmp/in_dir'
 # out_dir = '/tmp/out_dir'
 
-# print(f"{in_dir=}, {out_dir=}")
+# print(f"{in_dir=}, {out_dir=}, {max_depth=}")
 files = {}
 
 
-def get_dir_files(d, depth):
+def get_dir_files(d):
     # print(f"{d=}, {depth=}")
     d_list = os.listdir(d)
     for f in d_list:
@@ -20,7 +23,7 @@ def get_dir_files(d, depth):
         if os.path.islink(f_name):
             continue
         elif os.path.isdir(f_name):
-            get_dir_files(f_name, depth + 1)
+            get_dir_files(f_name)
         elif os.path.isfile(f_name):
             tmp = f
             if files.get(f) is not None:
@@ -36,4 +39,4 @@ def get_dir_files(d, depth):
             shutil.copy(f_name, os.path.join(out_dir, tmp))
 
 
-get_dir_files(in_dir, 1)
+get_dir_files(in_dir)
