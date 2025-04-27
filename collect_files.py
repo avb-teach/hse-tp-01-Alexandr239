@@ -2,30 +2,39 @@ import os
 import shutil
 import sys
 
+# in_dir = '/tmp/input_dir'
+# out_dir = '/tmp/output_dir'
+# max_depth = 3
+
 in_dir = sys.argv[1]
 out_dir = sys.argv[2]
-max_depth = None
+max_depth = 1
 if len(sys.argv) == 4 and sys.argv[3]:
     max_depth = int(sys.argv[3])
-# in_dir = '/tmp/in_dir'
-# out_dir = '/tmp/out_dir'
+
+if not in_dir.endswith("/"):
+    in_dir += "/"
+if not out_dir.endswith("/"):
+    out_dir += "/"
 
 # print(f"{in_dir=}, {out_dir=}, {max_depth=}")
 files = {}
 
 
-def get_dir_files(d):
+def get_dir_files(d, depth):
     # print(f"{d=}, {depth=}")
     d_list = os.listdir(d)
     for f in d_list:
         f_name = os.path.join(d, f)
-        # print(f"{f=}, {f_name=}")
         if os.path.islink(f_name):
             continue
         elif os.path.isdir(f_name):
-            get_dir_files(f_name)
+            get_dir_files(f_name, depth + 1)
         elif os.path.isfile(f_name):
             tmp = f
+            # print(f"{tmp=}, {f_name=}")
+            path_arr = f_name.replace(in_dir, "", 1).split("/")
+            # print(f"{path_arr=}")
             if files.get(f) is not None:
                 files[f] += 1
                 name_ext = f.split(".")
@@ -36,7 +45,13 @@ def get_dir_files(d):
                 tmp = ".".join(name_ext)
             else:
                 files[f] = 0
-            shutil.copy(f_name, os.path.join(out_dir, tmp))
+            path_arr.pop()
+            if len(path_arr) >= max_depth - 1:
+                path_arr = path_arr[len(path_arr) - (max_depth - 1):len(path_arr)]
+            # print(path_arr)
+            out_dir_tmp = os.path.join(out_dir, "/".join(path_arr))
+            os.makedirs(out_dir_tmp, exist_ok=True)
+            shutil.copy(f_name, os.path.join(out_dir_tmp, tmp))
 
 
-get_dir_files(in_dir)
+get_dir_files(in_dir, 1)
